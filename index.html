@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WOLF LABS | HR Assessment (Homework)</title>
+    
+    <!-- Premium Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { display: ['Montserrat', 'sans-serif'], body: ['Inter', 'sans-serif'], code: ['Fira Code', 'monospace'] },
+                    colors: { 
+                        brand: '#0073C0', /* Corporate Blue */
+                        accent: '#D4AF37', /* Elegant Gold */
+                        correct: '#10b981', 
+                        incorrect: '#ef4444',
+                        darkBase: '#060B14',
+                        darkPanel: '#0F172A',
+                        textDim: '#94a3b8'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --brand-main: #0073C0;
+            --accent: #D4AF37;
+            --darkBase: #060B14;
+            --darkPanel: #0F172A;
+            --darkBorder: rgba(255, 255, 255, 0.1);
+            --correct: #10b981;
+            --incorrect: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        body { background-color: var(--darkBase); color: #f8fafc; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+
+        /* Corporate Ambient Background */
+        .ambient-bg { position: fixed; inset: 0; z-index: -2; background: radial-gradient(circle at top right, #0F172A 0%, var(--darkBase) 100%); }
+        .bg-image {
+            position: fixed; inset: 0; z-index: -3;
+            background-image: url('https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=2000'); 
+            background-size: cover; background-position: center; opacity: 0.05; filter: grayscale(100%);
+        }
+        .orb { position: fixed; border-radius: 50%; filter: blur(120px); opacity: 0.15; z-index: -1; animation: float 15s infinite alternate ease-in-out; }
+        .orb-1 { width: 300px; height: 300px; background: var(--brand-main); top: -50px; left: -50px; }
+        .orb-2 { width: 250px; height: 250px; background: var(--accent); bottom: -50px; right: -50px; opacity: 0.1; }
+        @keyframes float { to { transform: translate(30px, 30px); } }
+
+        /* Navbar */
+        .navbar {
+            display: flex; justify-content: center; align-items: center;
+            padding: 15px 20px; background: rgba(6, 11, 20, 0.85); backdrop-filter: blur(20px);
+            position: sticky; top: 0; width: 100%; z-index: 100;
+            border-bottom: 1px solid var(--darkBorder); box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .logo { color: #fff; font-family: 'Montserrat', sans-serif; font-size: 1.1rem; font-weight: 900; letter-spacing: 1px; display: flex; align-items: center; gap: 8px;}
+        .logo i { color: var(--brand-main); }
+        .logo span { background: var(--brand-main); color: #fff; padding: 3px 8px; border-radius: 6px; font-size: 0.65rem; border: 1px solid var(--brand-main); }
+
+        /* Sticky Stats Bar */
+        .stats-bar {
+            position: sticky; top: 58px; z-index: 90; background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px); padding: 15px 20px; border-bottom: 1px solid var(--darkBorder);
+            display: flex; justify-content: space-between; align-items: center;
+            font-family: 'Fira Code', monospace; font-weight: 700; font-size: 1.1rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* Quiz Cards */
+        .hw-card {
+            background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px);
+            border: 1px solid var(--darkBorder); border-top: 4px solid var(--brand-main);
+            border-radius: 20px; padding: 30px 25px; margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4); transition: 0.3s ease;
+            position: relative; overflow: hidden;
+        }
+        .hw-card.locked { opacity: 0.8; transform: scale(0.98); pointer-events: none; border-top-color: transparent;}
+        .hw-card.correct-card { border-color: var(--correct); box-shadow: 0 0 30px rgba(16, 185, 129, 0.15); }
+        .hw-card.incorrect-card { border-color: var(--incorrect); }
+        
+        .card-number {
+            position: absolute; top: -10px; right: -10px; font-family: 'Montserrat', sans-serif;
+            font-size: 4rem; font-weight: 900; color: rgba(255,255,255,0.03); z-index: 0;
+            line-height: 1;
+        }
+
+        /* Typography */
+        .question-text { font-size: 1.25rem; font-weight: 600; color: #fff; line-height: 1.6; margin-bottom: 25px; position: relative; z-index: 10; font-family: 'Inter', sans-serif;}
+        .blank-space { border-bottom: 3px solid var(--accent); display: inline-block; min-width: 70px; text-align: center; color: var(--accent); padding: 0 5px; font-weight: 800;}
+
+        /* Interactive Buttons */
+        .opt-btn {
+            background: rgba(0,0,0,0.4); border: 2px solid var(--darkBorder);
+            color: #fff; padding: 16px 20px; border-radius: 12px; font-weight: 600; font-size: 1.1rem;
+            width: 100%; cursor: pointer; transition: 0.2s;
+            font-family: 'Inter', sans-serif; position: relative; z-index: 10;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .opt-btn:active { transform: scale(0.98); }
+        .opt-btn:hover { background: rgba(0, 115, 192, 0.1); border-color: var(--brand-main); }
+        .opt-btn.correct-btn { background: rgba(16, 185, 129, 0.15); border-color: var(--correct); color: var(--correct); box-shadow: 0 0 20px rgba(16, 185, 129, 0.2); }
+        .opt-btn.incorrect-btn { background: rgba(239, 68, 68, 0.15); border-color: var(--incorrect); color: var(--incorrect); animation: shake 0.4s; }
+
+        /* Action Bar */
+        .action-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: rgba(6, 11, 20, 0.95); backdrop-filter: blur(10px);
+            padding: 15px 20px; border-top: 1px solid var(--darkBorder);
+            display: flex; justify-content: center; z-index: 100;
+            padding-bottom: max(15px, env(safe-area-inset-bottom));
+            transform: translateY(100%); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .action-bar.show { transform: translateY(0); }
+        .submit-btn {
+            background: linear-gradient(135deg, var(--accent), #B49020);
+            color: #060B14; font-family: 'Montserrat', sans-serif; font-weight: 900;
+            font-size: 1.1rem; padding: 18px 40px; border-radius: 50px;
+            text-transform: uppercase; letter-spacing: 1px; border: none;
+            box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4); width: 100%; max-width: 400px;
+            transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .submit-btn:active { transform: translateY(2px); box-shadow: 0 2px 10px rgba(212, 175, 55, 0.4); }
+
+        /* Modal */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; opacity: 0; transition: 0.3s; backdrop-filter: blur(10px);}
+        .modal.active { display: flex; opacity: 1; }
+        .modal-content { background: var(--darkPanel); border: 2px solid var(--accent); border-radius: 20px; padding: 40px 20px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 0 50px rgba(212, 175, 55, 0.2); transform: scale(0.9); transition: 0.3s; }
+        .modal.active .modal-content { transform: scale(1); }
+
+        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} }
+        .icon-feedback { font-size: 1.2rem; opacity: 0; transition: 0.3s; }
+        .opt-btn.correct-btn .icon-feedback { opacity: 1; color: var(--correct); }
+        .opt-btn.incorrect-btn .icon-feedback { opacity: 1; color: var(--incorrect); }
+
+    </style>
+</head>
+<body>
+
+    <div class="bg-image"></div>
+    <div class="ambient-bg"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <nav class="navbar">
+        <div class="logo"><i class="fa-solid fa-briefcase"></i> WOLF LABS <span>HR</span></div>
+    </nav>
+
+    <div class="stats-bar">
+        <div class="text-accent"><i class="fa-solid fa-clipboard-check mr-2"></i> <span id="progress-text">0/15</span></div>
+        <div class="text-brand-main"><i class="fa-solid fa-bolt mr-2"></i> <span id="score-text">0 XP</span></div>
+    </div>
+
+    <main class="w-full max-w-xl mx-auto px-4 pt-8 pb-32" id="quiz-container">
+        
+        <!-- Header -->
+        <div class="text-center mb-10">
+            <i class="fa-solid fa-chart-line text-4xl text-accent mb-4 drop-shadow-[0_0_15px_rgba(212,175,55,0.6)]"></i>
+            <h1 class="font-display text-3xl text-white font-black uppercase tracking-tight">Radical Candor Assessment</h1>
+            <p class="text-textDim text-base mt-3 font-medium">Complete the 15 corporate scenarios. Green is correct, Red is incorrect.</p>
+        </div>
+
+        <!-- Cards will be injected here by JS -->
+
+    </main>
+
+    <!-- Fixed Action Bar -->
+    <div class="action-bar" id="action-bar">
+        <button class="submit-btn" onclick="finishHomework()">Submit Assessment <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal" id="success-modal">
+        <div class="modal-content">
+            <i class="fa-solid fa-award text-7xl text-accent mb-6 drop-shadow-[0_0_20px_rgba(212,175,55,0.6)]"></i>
+            <h2 class="text-2xl font-display font-black text-white mb-2 uppercase">Assessment Cleared!</h2>
+            <p class="text-correct font-bold text-2xl mb-2 font-code" id="final-score-text">15/15</p>
+            <p class="text-white font-medium text-lg mb-6">Performance Rating: <span class="text-accent font-bold uppercase tracking-widest">Executive</span></p>
+            <p class="text-textDim mb-8 text-sm leading-relaxed">Your corporate feedback data has been transmitted to your Director's Console.</p>
+            <button class="opt-btn justify-center text-black font-bold uppercase tracking-widest" style="background: var(--accent); color: #000; border: none;" onclick="closeModal()">Return to Base</button>
+        </div>
+    </div>
+
+    <script>
+        // --- QUIZ DATA (15 Questions: HR Vocab & Modals) ---
+        const quizData = [
+            { q: "To express admiration or approval to an employee is to <span class='blank-space'>___</span> them.", opts: ["complain", "praise"], ans: 1 },
+            { q: "\"Radical <span class='blank-space'>___</span>\" means being open and honest in your expression.", opts: ["Candor", "Empathy"], ans: 0 },
+            { q: "A manager who is extremely unpleasant, rude, or aggressive is being <span class='blank-space'>___</span>.", opts: ["kind", "obnoxious"], ans: 1 },
+            { q: "If you care personally but refuse to challenge an employee directly, you are showing <span class='blank-space'>___</span> Empathy.", opts: ["Ruinous", "Helpful"], ans: 0 },
+            { q: "The ability to understand and share the feelings of another person is called <span class='blank-space'>___</span>.", opts: ["empathy", "aggression"], ans: 0 },
+            { q: "A good leader <span class='blank-space'>___</span> give honest feedback to help the team grow.", opts: ["should", "shouldn't"], ans: 0 },
+            { q: "You <span class='blank-space'>___</span> criticize your team members in public. Do it in private.", opts: ["shouldn't", "ought to"], ans: 0 },
+            { q: "We <span class='blank-space'>___</span> to care personally about our colleagues to build trust.", opts: ["ought", "should"], ans: 0 },
+            { q: "If you want to improve your performance, you <span class='blank-space'>___</span> ask for feedback regularly.", opts: ["should", "shouldn't"], ans: 0 },
+            { q: "They <span class='blank-space'>___</span> ignore the problem. It will only get worse!", opts: ["shouldn't", "ought to"], ans: 0 },
+            { q: "It's a strict corporate rule: You <span class='blank-space'>___</span> lie to your team.", opts: ["mustn't", "don't have to"], ans: 0 },
+            { q: "I <span class='blank-space'>___</span> finish this report by 5 PM. The boss needs it for the meeting!", opts: ["have to", "mustn't"], ans: 0 },
+            { q: "You <span class='blank-space'>___</span> agree with everything I say. It's okay to debate and have different ideas.", opts: ["don't have to", "mustn't"], ans: 0 },
+            { q: "We <span class='blank-space'>___</span> wear a suit on 'Casual Fridays'. It's completely optional.", opts: ["don't have to", "mustn't"], ans: 0 },
+            { q: "To practice Radical Candor properly, you <span class='blank-space'>___</span> care personally AND challenge directly.", opts: ["must", "mustn't"], ans: 0 }
+        ];
+
+        let answeredCount = 0;
+        let correctCount = 0;
+        let currentXP = 0;
+        const totalQuestions = quizData.length;
+        const xpPerQuestion = 100;
+
+        // --- RENDER CARDS ---
+        function renderCards() {
+            const container = document.getElementById('quiz-container');
+            
+            quizData.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'hw-card';
+                card.id = `card-${index}`;
+                
+                let btnsHtml = item.opts.map((opt, oIndex) => `
+                    <button class="opt-btn" onclick="checkAnswer(${index}, ${oIndex}, this)">
+                        <span>${opt}</span>
+                        <i class="fa-solid fa-circle icon-feedback"></i>
+                    </button>
+                `).join('');
+
+                card.innerHTML = `
+                    <div class="card-number">${index + 1}</div>
+                    <p class="question-text">${item.q}</p>
+                    <div class="flex flex-col gap-3">
+                        ${btnsHtml}
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        // --- LOGIC ---
+        function checkAnswer(qIndex, selectedOptIndex, btnElement) {
+            const card = document.getElementById(`card-${qIndex}`);
+            if (card.classList.contains('locked')) return; 
+            
+            card.classList.add('locked');
+            answeredCount++;
+            
+            const isCorrect = (selectedOptIndex === quizData[qIndex].ans);
+            const allBtns = card.querySelectorAll('.opt-btn');
+
+            if (isCorrect) {
+                // Correct logic
+                btnElement.classList.add('correct-btn');
+                btnElement.querySelector('i').className = 'fa-solid fa-check icon-feedback';
+                card.classList.add('correct-card');
+                
+                // Fill the blank space visually
+                const blank = card.querySelector('.blank-space');
+                if(blank) {
+                    blank.innerHTML = quizData[qIndex].opts[selectedOptIndex];
+                    blank.style.borderColor = 'var(--correct)';
+                    blank.style.color = 'var(--correct)';
+                }
+                
+                correctCount++;
+                currentXP += xpPerQuestion;
+                
+            } else {
+                // Incorrect logic
+                btnElement.classList.add('incorrect-btn');
+                btnElement.querySelector('i').className = 'fa-solid fa-xmark icon-feedback';
+                card.classList.add('incorrect-card');
+                
+                // Highlight the right one
+                const correctBtn = allBtns[quizData[qIndex].ans];
+                correctBtn.classList.add('correct-btn');
+                correctBtn.querySelector('i').className = 'fa-solid fa-check icon-feedback';
+                
+                // Fill the blank space with correct answer
+                const blank = card.querySelector('.blank-space');
+                if(blank) {
+                    blank.innerHTML = quizData[qIndex].opts[quizData[qIndex].ans];
+                    blank.style.color = 'var(--incorrect)';
+                    blank.style.borderColor = 'var(--incorrect)';
+                }
+            }
+
+            updateStats();
+
+            // Check if game is over
+            if (answeredCount === totalQuestions) {
+                setTimeout(() => {
+                    document.getElementById('action-bar').classList.add('show');
+                }, 500);
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('progress-text').innerText = `${answeredCount}/${totalQuestions}`;
+            document.getElementById('score-text').innerText = `${currentXP} XP`;
+        }
+
+        function finishHomework() {
+            document.getElementById('final-score-text').innerText = `${correctCount}/${totalQuestions}`;
+            
+            const modal = document.getElementById('success-modal');
+            modal.style.display = 'flex';
+            setTimeout(() => { modal.style.opacity = '1'; }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('success-modal');
+            modal.style.opacity = '0';
+            setTimeout(() => { modal.style.display = 'none'; }, 300);
+        }
+
+        // --- INIT ---
+        window.onload = () => {
+            renderCards();
+        };
+    </script>
+</body>
+</html>
